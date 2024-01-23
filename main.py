@@ -197,7 +197,17 @@ def handle_document(update, context):
 
     file_path = sd.getAttachmentPath(namaTraining)
 
-    ccEmails = ['info@brainmatics.com']
+    # ccEmails = ['info@brainmatics.com']
+    ccEmails = []
+
+    totalSoftwarePerluDisiapkan = df.iloc[1, 8]
+    linkDownloadSoftware = df.iloc[2, 8]
+    listSoftware = []
+
+    if(totalSoftwarePerluDisiapkan > 0):
+        for i in range(7, totalSoftwarePerluDisiapkan+7):
+            listSoftware.append(df.iloc[i, 7])
+
 
     # looping array banyak data peserta
     # mulai dari angka 2 karena data peserta mulai dari baris ke 3
@@ -209,7 +219,8 @@ def handle_document(update, context):
 
         bodyEmail = sd.getBodyEmail(namaAsisten, noHpAsisten, namaPeserta, namaTraining,
                                     tanggalTraining, waktuTraining, lokasiTraining,
-                                    linkLokasiGmaps, ruanganTraining, usernamePeserta, passwordPeserta)
+                                    linkLokasiGmaps, ruanganTraining, usernamePeserta, passwordPeserta,
+                                    totalSoftwarePerluDisiapkan, linkDownloadSoftware, listSoftware)
 
         sd.send(f"Konfirmasi Pelaksanaan {namaTraining}", bodyEmail, emailPeserta, ccEmails, namaAsisten, file_path)
         context.bot.send_message(chat_id, f"Email Konfirmasi Training berhasil dikirimkan ke *{namaPeserta}* melalui email *{emailPeserta}*")
@@ -224,7 +235,7 @@ def handle_document(update, context):
 # Fungsi utama untuk mengatur bot
 def main():
     # Token API dari BotFather
-    token = '6815627895:AAGU_kQ6A3w3lKT7P_nf5R-rlRGLq7UEyAc'
+    token = '6815627895:AAEIbmtmC4ByHgIrXyxODKo3J0MBgk8MInw'
     updater = Updater(token)
     
     # Dispatcher untuk mendaftarkan handlers

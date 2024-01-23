@@ -49,8 +49,8 @@ class SendEmail:
         return pathFileBaru
 
 
-    def getBodyEmail(self, namaAsisten, noHpAsisten, namaPeserta, namaTraining, tanggalTraining, waktuTraining, lokasiTraining, lokasiLinkGmaps, ruanganTraining, username, password):
-        return f'''
+    def getBodyEmail(self, namaAsisten, noHpAsisten, namaPeserta, namaTraining, tanggalTraining, waktuTraining, lokasiTraining, lokasiLinkGmaps, ruanganTraining, username, password, totalSoftwarePerluDisiapkan, linkDownloadSoftware, listSoftware):
+        paragrafAwal = f'''
             <p style="font-family: Helvetica, sans-serif; font-size: 9pt;">Yth Bapak/Ibu {namaPeserta},</p>
             
             <p style="font-family: Helvetica, sans-serif; font-size: 9pt;">Bersama email berikut kami kirimkan <strong>Konfirmasi Pelaksanaan {namaTraining}</strong> sebagai konfirmasi pelaksanaan training yang akan diselenggarakan pada:</p>
@@ -72,7 +72,9 @@ class SendEmail:
             </ol>
             
             <p style="font-family: Helvetica, sans-serif; font-size: 9pt;">Jika membutuhkan panduan penggunaan Brainmatics LMS dapat didownload melalui link berikut: <a href="https://1drv.ms/b/s!AiwttwOoOn4bipMM5RKOgVcl_nxQ6g?e=IcFjRg/" target="_blank">Panduan Penggunaan Brainmatics LMS</a>.</p>
-            
+        '''
+
+        paragrafPenutup = f'''
             <p style="font-family: Helvetica, sans-serif; font-size: 9pt;">Semoga pelaksanaan training ini dapat berjalan dengan baik dan mendapatkan hasil yang memuaskan. Demikian yang dapat kami sampaikan, apabila ada informasi yang belum jelas, silahkan menghubungi kami kembali.</p>
             
             <p style="font-family: Helvetica, sans-serif; font-size: 9pt;">Salam,</p>
@@ -84,6 +86,26 @@ class SendEmail:
             Ph. +62 {noHpAsisten} | Phone/WA/Telegram +62 {noHpAsisten}<br>
             <a href="http://www.brainmatics.com" target="_blank">www.brainmatics.com</a></p>
         '''
+
+        paragrafSoftware = ''
+        if(totalSoftwarePerluDisiapkan > 0):
+            paragrafSoftware += f'''
+                <p style="font-family: Helvetica, sans-serif; font-size: 9pt;">Terkait persiapan training, terdapat software yang perlu diinstall :</p>
+                
+                <ol style="font-family: Helvetica, sans-serif; font-size: 9pt;">
+            '''
+
+            for software in listSoftware:
+                paragrafSoftware += f'<li>{software}</li>'
+
+            paragrafSoftware += '</ol>'
+
+            paragrafSoftware += f'''
+                <p style="font-family: Helvetica, sans-serif; font-size: 9pt;">Link unduh dan tata cara install software pendukung training dapat dilihat pada link berikut: <a href="{linkDownloadSoftware}" target="_blank">Panduan Instalasi dan Link Unduh Software Pendukung</a></p>
+            '''
+
+        return paragrafAwal + paragrafSoftware + paragrafPenutup
+
 
     def send(self, subject, body, to_email, cc_emails, namaAsisten, attachment_path):
         # Membuat pesan MIMEMultipart

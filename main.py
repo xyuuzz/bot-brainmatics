@@ -197,8 +197,8 @@ def handle_document(update, context):
 
     file_path = sd.getAttachmentPath(namaTraining)
 
-    # ccEmails = ['info@brainmatics.com']
-    ccEmails = []
+    ccEmails = ['info@brainmatics.com']
+    # ccEmails = []
 
     totalSoftwarePerluDisiapkan = df.iloc[1, 8]
     linkDownloadSoftware = df.iloc[2, 8]

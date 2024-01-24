@@ -144,7 +144,7 @@ def handle_document(update, context):
         context.bot.send_message(chat_id, 'Terima kasih sudah mengirimkan data berupa file excel :>')
         context.bot.send_message(chat_id, 'Untuk langkah selanjutnya silahkan bisa mengirimkan file surat konfirmasi training berupa PDF')
         context.bot.send_message(chat_id, 'Berikut untuk template surat konfirmasi training yang bisa digunakan')
-        context.bot.send_document(chat_id, document=open('template surat konfirmasi training_old.docx', 'rb'))
+        context.bot.send_document(chat_id, document=open('template surat konfirmasi training.docx', 'rb'))
 
         statusPesan = 'upload_dokumen_training'
 

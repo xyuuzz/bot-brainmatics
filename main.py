@@ -5,6 +5,7 @@ import datetime
 import os
 import pandas as pd
 from send_email import SendEmail
+from spreadsheet import Spreadsheet
 
 
 # Mengatur path ke file database (db.txt)
@@ -13,6 +14,15 @@ db_path = './db.txt'
 # Load the document
 doc_path = './penawaran.docx'
 doc = Document(doc_path)
+
+link_google_keamanan = 'https://myaccount.google.com/u/1/security?hl=in'
+
+# Token API dari BotFather
+token = '6815627895:AAEIbmtmC4ByHgIrXyxODKo3J0MBgk8MInw'
+updater = Updater(token)
+
+# Dispatcher untuk mendaftarkan handlers
+dp = updater.dispatcher
 
 # Fungsi untuk mendapatkan nomor bulan Romawi
 def get_roman_month(month):
@@ -23,16 +33,7 @@ def get_roman_month(month):
     return roman_months.get(month, '')
 
 # Fungsi untuk mendapatkan nomor form yang berikutnya
-def get_next_form_number(db_path, current_year):
-    # Mengecek apakah file database (db.txt) ada atau tidak
-    # if not os.path.exists(db_path) or not os.path.isfile(db_path):
-    #     # Jika tidak ada, mulai dari nomor 1
-    #     return 1
-    
-    # Membaca file untuk mendapatkan nomor terakhir yang digunakan
-    with open(db_path, 'r') as file:
-        last_entry = file.read().strip()
-    
+def get_next_form_number(last_entry, current_year):
     # Memeriksa apakah file kosong atau tahun telah berubah
     if not last_entry or (2000 + int(last_entry.split('/')[-1])) != current_year:
         print(last_entry)
@@ -83,7 +84,18 @@ def generateEditedDocument():
 
     doc.save(edited_doc_path)
 
-# edited_doc_path
+
+def generateNoFR(latest_number):
+    # Mendapatkan tanggal saat ini
+    current_date = datetime.datetime.now()
+    current_year = current_date.year
+
+    # Mendapatkan nomor form berikutnya
+    next_form_number = get_next_form_number(latest_number, current_year)
+
+    # Membuat format nomor form
+    dynamic_number = f"{str(next_form_number).zfill(2)}/FR/BM/{get_roman_month(current_date.month)}/{str(current_year)[2:]}"
+    return dynamic_number
 
 def send_document(update, context):
     query = update.callback_query
@@ -91,23 +103,12 @@ def send_document(update, context):
     generateEditedDocument()
     context.bot.send_document(chat_id, document=open('./bm-form-registration-training-2024.docx', 'rb'))
 
-# Token API dari BotFather
-# token = '6815627895:AAGU_kQ6A3w3lKT7P_nf5R-rlRGLq7UEyAc'
-
-# updater = Updater(token)
-# dp = updater.dispatcher
-
-# # Menambahkan command handler untuk mengirim dokumen
-# dp.add_handler(CommandHandler('cetak_registrasi', send_document))
-
-# updater.start_polling()
-# updater.idle()
 
 # Fungsi yang dipanggil ketika pengguna menekan tombol start
 def start(update, context):
     keyboard = [
         [
-            InlineKeyboardButton("Cetak Form Registrasi", callback_data='cetak_registrasi'),
+            InlineKeyboardButton("Dapatkan Nomor Form Registrasi", callback_data='cetak_registrasi'),
             InlineKeyboardButton("Kirim Email Konfirmasi Peserta Training", callback_data='kirim_email_konfirmasi')
         ],
     ]
@@ -116,25 +117,58 @@ def start(update, context):
 
 statusPesan = 'mulai'
 
-# Fungsi yang dipanggil ketika pengguna menekan tombol Cetak Registrasi
+# Fungsi yang dipanggil pertama kali
 def button(update, context):
     global statusPesan
 
     query = update.callback_query
-    query.answer()
+    chat_id = query.message.chat_id
+
+    # cek jawaban user
+    value = update.callback_query.data
+
+
+    if(statusPesan == 'fr_pilih_jenis_training'):
+        spr = Spreadsheet("https://docs.google.com/spreadsheets/d/17LEuQE82BjMjxX70yEa-hfH6faLX6wn2KzB2eQ5h46Q/edit#gid=0")
+        latest_number = spr.get_value_last_row()
+        noFRBaru = generateNoFR(latest_number)
+        spr.add_data([noFRBaru, value])
+
+        context.bot.send_message(chat_id, f'Baik, anda memilih jenis training *{value}*')
+        context.bot.send_message(chat_id, 'Silahkan cantumkan Nama Training')
+        statusPesan = 'fr_nama_training'
     
     # Memeriksa data callback dan memanggil fungsi yang sesuai
     if query.data == 'cetak_registrasi':
-        send_document(update, context)
+        selectJenisTraining(query, context)
     elif query.data == 'kirim_email_konfirmasi':
-        chat_id = query.message.chat_id
         statusPesan = 'mulai'
         context.bot.send_message(chat_id, 'Silahkan lengkapi data training dan peserta training pada file excel di bawah ini untuk mengirimkan Email Konfirmasi Training ke Peserta')
         context.bot.send_document(chat_id, document=open('./Template Data Email Konfirmasi.xlsx', 'rb'))
         context.bot.send_message(chat_id, 'Setelah melengkapi data training dan peserta training pada file excel, kirim kesini lagi ya filenya :)')
         context.bot.send_message(chat_id, 'Nanti BOT ini akan membantu mengirimkan secara otomatis Email Konfirmasi Training ke peserta training ya')
+        context.bot.send_message(chat_id, 'NB: Aktifkan pengaturan Less Secure App Access (Akses Aplikasi Kurang Aman) pada akun email yang digunakan untuk mengirimkan Email Konfirmasi Training')
+        context.bot.send_message(chat_id, f'Untuk mengaturnya, silahkan bisa klik link berikut ini: {link_google_keamanan}')
+        context.bot.send_message(chat_id, 'Berikut untuk foto menu pengaturannya:')
+        context.bot.send_photo(chat_id, photo=open('./ss_full_akses_aplikasi_kurang_aman.png', 'rb'))
+        context.bot.send_photo(chat_id, photo=open('./akses_aplikasi_kurang_aman.png', 'rb'))
 
 
+
+
+
+
+# Fungsi untuk menangani pemilihan
+def selectJenisTraining(update, context):
+    global statusPesan
+    keyboard = [
+        [InlineKeyboardButton("Regular Training", callback_data="Regular Training")],
+        [InlineKeyboardButton("Private Training", callback_data="Private Training")],
+        [InlineKeyboardButton("InHouse Training", callback_data="InHouse Training")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    statusPesan = 'fr_pilih_jenis_training'
+    update.message.reply_text("Pilih jenis training:", reply_markup=reply_markup)
 
 def handle_document(update, context):
     global statusPesan
@@ -231,16 +265,38 @@ def handle_document(update, context):
     os.remove('surat_konfirmasi.pdf')
     os.remove(file_path)
 
+def handle_text(update, context):
+    global statusPesan
+    chat_id = update.message.chat_id
+    spr = Spreadsheet("https://docs.google.com/spreadsheets/d/17LEuQE82BjMjxX70yEa-hfH6faLX6wn2KzB2eQ5h46Q/edit#gid=0")
+    last_row = spr.get_last_row()
+
+    # menerima value
+    value = update.message.text
+
+    if (statusPesan.split('_').pop(0) == 'fr'):
+        column = '_'.join(statusPesan.split('_')[1:])
+        spr.update_data('registrasi', column, last_row, value)
+
+    if(statusPesan == 'fr_nama_training'):
+        context.bot.send_message(chat_id, 'Silahkan cantumkan Instansi yang ingin melakukan Registrasi Training')
+        statusPesan = 'fr_instansi'
+    elif(statusPesan == 'fr_instansi'):
+        context.bot.send_message(chat_id, 'Silahkan cantumkan nama PIC Internal (Marketing)')
+        statusPesan = 'fr_pic_internal'
+    elif(statusPesan == 'fr_pic_internal'):
+        context.bot.send_message(chat_id, 'Silahkan cantumkan nama PIC Eksternal (PIC Instansi/Client)')
+        statusPesan = 'fr_pic_eksternal'
+    elif (statusPesan == 'fr_pic_eksternal'):
+        context.bot.send_message(chat_id, 'Terimakasih atas data yang diberikan! Berikut untuk Nomor Form Registrasi Trainingnya ya staff marketing BM tercintaah :>')
+        context.bot.send_message(chat_id, spr.get_value_last_row())
+        context.bot.send_message(chat_id, 'Semoga training nya jadi ya, biar bisa dapet komisi :>')
+        statusPesan = 'mulai'
+
 
 # Fungsi utama untuk mengatur bot
 def main():
-    # Token API dari BotFather
-    token = '6815627895:AAEIbmtmC4ByHgIrXyxODKo3J0MBgk8MInw'
-    updater = Updater(token)
-    
-    # Dispatcher untuk mendaftarkan handlers
-    dp = updater.dispatcher
-    
+    global statusPesan
     # Menambahkan command handler untuk /start
     dp.add_handler(CommandHandler('start', start))
     
@@ -249,6 +305,9 @@ def main():
 
     # Menambahkan message handler untuk menangani dokumen/file
     dp.add_handler(MessageHandler(Filters.document, handle_document))
+
+    # Menambahkan message handler untuk menangani text
+    dp.add_handler(MessageHandler(Filters.text, handle_text))
 
     # Mulai bot
     updater.start_polling()

@@ -27,11 +27,11 @@ class Spreadsheet:
         'status': '7',
     }
 
-    def __init__(self, spreadsheet_url):
+    def __init__(self, spreadsheet_url, sheet):
         self.gc = gspread.service_account('service_account.json')
 
         # Open a sheet from a spreadsheet in one go
-        self.worksheet = self.gc.open_by_url(spreadsheet_url).sheet1
+        self.worksheet = self.gc.open_by_url(spreadsheet_url).worksheet(sheet)
 
     def get_data(self):
         data = self.worksheet.get_all_values()
@@ -58,7 +58,3 @@ class Spreadsheet:
     def get_last_row(self):
         last_row = len(self.worksheet.get_all_values())
         return last_row
-
-
-spreadsheet = Spreadsheet("https://docs.google.com/spreadsheets/d/1gUxhHrtU5dw5hevzf38DBpI9fy4d3FQo5qVWe4eGQQE/edit#gid=0")
-print(spreadsheet.get_value_last_row())

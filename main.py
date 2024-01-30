@@ -24,6 +24,8 @@ updater = Updater(token)
 # Dispatcher untuk mendaftarkan handlers
 dp = updater.dispatcher
 
+spr = Spreadsheet("https://docs.google.com/spreadsheets/d/1sG12Jf2wWQKkxx6TPkUuwUtwUY0xvilhgpRCxKo_oLg/edit?pli=1#gid=136109342", 'Nomor Form Registrasi 2024')
+
 # Fungsi untuk mendapatkan nomor bulan Romawi
 def get_roman_month(month):
     roman_months = {
@@ -126,7 +128,6 @@ def button(update, context):
 
 
     if(statusPesan == 'fr_pilih_jenis_training'):
-        spr = Spreadsheet("https://docs.google.com/spreadsheets/d/17LEuQE82BjMjxX70yEa-hfH6faLX6wn2KzB2eQ5h46Q/edit#gid=0")
         latest_number = spr.get_value_last_row()
         noFRBaru = generateNoFR(latest_number)
         spr.add_data([noFRBaru, value])
@@ -265,7 +266,6 @@ def handle_document(update, context):
 def handle_text(update, context):
     global statusPesan
     chat_id = update.message.chat_id
-    spr = Spreadsheet("https://docs.google.com/spreadsheets/d/17LEuQE82BjMjxX70yEa-hfH6faLX6wn2KzB2eQ5h46Q/edit#gid=0")
     last_row = spr.get_last_row()
 
     # menerima value

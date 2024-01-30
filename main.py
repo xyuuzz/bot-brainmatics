@@ -36,8 +36,6 @@ def get_roman_month(month):
 def get_next_form_number(last_entry, current_year):
     # Memeriksa apakah file kosong atau tahun telah berubah
     if not last_entry or (2000 + int(last_entry.split('/')[-1])) != current_year:
-        print(last_entry)
-        print(current_year)
         # Jika tahun telah berubah atau file kosong, mulai dari nomor 1
         return 1
     
@@ -51,22 +49,21 @@ def save_form_number(db_path, form_number, year):
         file.write(f"{str(form_number).zfill(2)}/FR/BM/{get_roman_month(datetime.datetime.now().month)}/{str(year)[2:]}")
     
 
-def generateEditedDocument():
+def generateEditedDocument(last_entry):
     # Assume we need to add a dynamic number to the "No:" field
     # For demonstration, let's use a hypothetical dynamic number
     # Mendapatkan tanggal saat ini
-    current_date = datetime.datetime.now()
-    current_year = current_date.year
+    # current_date = datetime.datetime.now()
+    # current_year = current_date.year
 
     # Mendapatkan nomor form berikutnya
-    next_form_number = get_next_form_number(db_path, current_year)
+    # next_form_number = get_next_form_number(last_entry, current_year)
 
     # Menyimpan nomor form yang baru
-    save_form_number(db_path, next_form_number, current_year)
+    # save_form_number(db_path, next_form_number, current_year)
 
     # Membuat format nomor form
-    dynamic_number = f"{str(next_form_number).zfill(2)}/FR/BM/{get_roman_month(current_date.month)}/{str(current_year)[2:]}"
-    print(dynamic_number)
+    dynamic_number = last_entry
 
     # Search for the paragraph containing "No:" and add the dynamic number
     for paragraph in doc.paragraphs:
@@ -134,7 +131,7 @@ def button(update, context):
         noFRBaru = generateNoFR(latest_number)
         spr.add_data([noFRBaru, value])
 
-        context.bot.send_message(chat_id, f'Baik, anda memilih jenis training *{value}*')
+        # context.bot.send_message(chat_id, f'Baik, anda memilih jenis training *{value}*')
         context.bot.send_message(chat_id, 'Silahkan cantumkan Nama Training')
         statusPesan = 'fr_nama_training'
     
@@ -288,8 +285,12 @@ def handle_text(update, context):
         context.bot.send_message(chat_id, 'Silahkan cantumkan nama PIC Eksternal (PIC Instansi/Client)')
         statusPesan = 'fr_pic_eksternal'
     elif (statusPesan == 'fr_pic_eksternal'):
-        context.bot.send_message(chat_id, 'Terimakasih atas data yang diberikan! Berikut untuk Nomor Form Registrasi Trainingnya ya staff marketing BM tercintaah :>')
-        context.bot.send_message(chat_id, spr.get_value_last_row())
+        # context.bot.send_message(chat_id, 'Terimakasih atas data yang diberikan! Berikut untuk Nomor Form Registrasi Trainingnya ya staff marketing BM tercintaah :>')
+        #context.bot.send_message(chat_id, spr.get_value_last_row())
+        context.bot.send_message(chat_id, 'Terimakasih atas data yang diberikan! Berikut untuk Dokumen Form Registrasi Trainingnya ya staff marketing BM tercintaah :>')
+        last_entry = spr.get_value_last_row()
+        generateEditedDocument(last_entry)
+        context.bot.send_document(chat_id, document=open('./bm-form-registration-training-2024.docx', 'rb'))
         context.bot.send_message(chat_id, 'Semoga training nya jadi ya, biar bisa dapet komisi :>')
         statusPesan = 'mulai'
 

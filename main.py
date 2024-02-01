@@ -102,9 +102,12 @@ def send_document(update, context):
     generateEditedDocument()
     context.bot.send_document(chat_id, document=open('./bm-form-registration-training-2024.docx', 'rb'))
 
+statusPesan = 'mulai'
 
 # Fungsi yang dipanggil ketika pengguna menekan tombol start
 def start(update, context):
+    global statusPesan
+    statusPesan = 'mulai'
     keyboard = [
         [
             InlineKeyboardButton("Dapatkan Nomor Form Registrasi", callback_data='cetak_registrasi'),
@@ -114,7 +117,6 @@ def start(update, context):
     reply_markup = InlineKeyboardMarkup(keyboard)
     update.message.reply_text('Halo Warga Brainmatics! Kamu mau ngapain nih?? Klik Tombol dibawah yaa :)', reply_markup=reply_markup)
 
-statusPesan = 'mulai'
 
 # Fungsi yang dipanggil pertama kali
 def button(update, context):
@@ -271,6 +273,9 @@ def handle_text(update, context):
     # menerima value
     value = update.message.text
 
+    if(statusPesan == 'mulai'):
+        context.bot.send_message(chat_id, 'Halo staff marketing BM, selamat datang di Bot Learning Brainmatics!')
+
     if (statusPesan.split('_').pop(0) == 'fr'):
         column = '_'.join(statusPesan.split('_')[1:])
         spr.update_data('registrasi', column, last_row, value)
@@ -297,7 +302,6 @@ def handle_text(update, context):
 
 # Fungsi utama untuk mengatur bot
 def main():
-    global statusPesan
     # Menambahkan command handler untuk /start
     dp.add_handler(CommandHandler('start', start))
     

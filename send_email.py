@@ -57,6 +57,7 @@ class SendEmail:
 
         tambahanParagrafPembukaOnline = ''
         tempatDanWaktuPelaksanaan = ''
+        usernameDanPasswordLms = ''
         if(isOnline):
             tambahanParagrafPembukaOnline = 'online via aplikasi Zoom'
             tempatDanWaktuPelaksanaan = f'''
@@ -67,12 +68,19 @@ class SendEmail:
                 <strong>Password</strong>: {passwordMeetingZoom}<br>
                 <strong>Link Join Online Training</strong>: <a href="{linkJoinMeetingZoom}" target="_blank">{namaTraining}</a></p>
             '''
+            usernameDanPasswordLms = f'''
+                <li>Silahkan masukan username dan password anda</li>
+            '''
         else:
             tempatDanWaktuPelaksanaan = f'''
                 <p style="font-family: Helvetica, sans-serif; font-size: 9pt;"><strong>Tanggal</strong>: {tanggalTraining}<br>
                 <strong>Waktu</strong>: {waktuTraining}<br>
                 <strong>Lokasi</strong>: <a href="{lokasiLinkGmaps}" target="_blank">{lokasiTraining}</a><br>
                 <strong>Ruangan</strong>: {ruanganTraining}</p>
+            '''
+            usernameDanPasswordLms = f'''
+                <li>Silahkan masukan username anda yaitu: <strong>{username}</strong></li>
+                <li>Silahkan masukan password anda yaitu: <strong>{password}</strong></li>
             '''
 
         paragrafAwal = f'''
@@ -84,8 +92,7 @@ class SendEmail:
             <ol style="font-family: Helvetica, sans-serif; font-size: 9pt;">
             <li>Silahkan mengakses situs <a href="https://brainmatics.com/" target="_blank">https://brainmatics.com/</a></li>
             <li>Pilih link login yang terdapat di pojok kiri atas</li>
-            <li>Silahkan masukan username anda yaitu: <strong>{username}</strong></li>
-            <li>Silahkan masukan password anda yaitu: <strong>{password}</strong></li>
+            {usernameDanPasswordLms}
             <li>Silahkan klik link View yang terdapat pada kolom Syllabus & Material, untuk mengakses materi training</li>
             <li>Silahkan klik link View yang terdapat pada kolom Certificate, untuk mengakses sertifikat keikutsertaan anda</li>
             </ol>

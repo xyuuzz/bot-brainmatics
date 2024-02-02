@@ -4,6 +4,7 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 import fitz  # PyMuPDF
+import pandas as pd
 
 
 def replace_text(page, search_text, replacement_text):
@@ -49,19 +50,37 @@ class SendEmail:
         return pathFileBaru
 
 
-    def getBodyEmail(self, namaAsisten, noHpAsisten, namaPeserta, namaTraining, tanggalTraining, waktuTraining, lokasiTraining, lokasiLinkGmaps, ruanganTraining, username, password, totalSoftwarePerluDisiapkan, linkDownloadSoftware, listSoftware):
+    def getBodyEmail(self, namaAsisten, noHpAsisten, namaPeserta, namaTraining, tanggalTraining,
+                     waktuTraining, lokasiTraining, lokasiLinkGmaps, ruanganTraining, username, password,
+                     totalSoftwarePerluDisiapkan, linkDownloadSoftware, listSoftware, meetingIDZoom, passwordMeetingZoom, linkJoinMeetingZoom, hariOnlineTraining):
+        isOnline = not pd.isnull(meetingIDZoom)
+
+        tambahanParagrafPembukaOnline = ''
+        tempatDanWaktuPelaksanaan = ''
+        if(isOnline):
+            tambahanParagrafPembukaOnline = 'online via aplikasi Zoom'
+            tempatDanWaktuPelaksanaan = f'''
+                <p style="font-family: Helvetica, sans-serif; font-size: 9pt; margin-top: 0; padding-top:0;"><strong>Hari/Tanggal</strong>: {hariOnlineTraining}/{tanggalTraining}<br>
+                <strong>Pukul</strong>: {waktuTraining}</p>
+                <p style="font-family: Helvetica, sans-serif; font-size: 9pt; margin-bottom: 0; padding-bottom: 0;">Untuk bergabung dalam pelaksanaan trainingnya pastikan PC/Laptop sudah terinstall aplikasi Zoom, dan berikut informasinya:</p>
+                <p style="font-family: Helvetica, sans-serif; font-size: 9pt; margin-top: 0; padding-top:0;"><strong>Meeting ID</strong>: {meetingIDZoom}<br>
+                <strong>Password</strong>: {passwordMeetingZoom}<br>
+                <strong>Link Join Online Training</strong>: <a href="{linkJoinMeetingZoom}" target="_blank">{namaTraining}</a></p>
+            '''
+        else:
+            tempatDanWaktuPelaksanaan = f'''
+                <p style="font-family: Helvetica, sans-serif; font-size: 9pt;"><strong>Tanggal</strong>: {tanggalTraining}<br>
+                <strong>Waktu</strong>: {waktuTraining}<br>
+                <strong>Lokasi</strong>: <a href="{lokasiLinkGmaps}" target="_blank">{lokasiTraining}</a><br>
+                <strong>Ruangan</strong>: {ruanganTraining}</p>
+            '''
+
         paragrafAwal = f'''
             <p style="font-family: Helvetica, sans-serif; font-size: 9pt;">Yth Bapak/Ibu {namaPeserta},</p>
             
-            <p style="font-family: Helvetica, sans-serif; font-size: 9pt;">Bersama email berikut kami kirimkan <strong>Konfirmasi Pelaksanaan {namaTraining}</strong> sebagai konfirmasi pelaksanaan training yang akan diselenggarakan pada:</p>
-            
-            <p style="font-family: Helvetica, sans-serif; font-size: 9pt;"><strong>Tanggal</strong>: {tanggalTraining}<br>
-            <strong>Waktu</strong>: {waktuTraining}<br>
-            <strong>Lokasi</strong>: <a href="{lokasiLinkGmaps}" target="_blank">{lokasiTraining}</a><br>
-            <strong>Ruangan</strong>: {ruanganTraining}</p>
-            
+            <p style="font-family: Helvetica, sans-serif; font-size: 9pt; margin-bottom: 0; padding-bottom: 0;">Bersama email berikut kami kirimkan <strong>Konfirmasi Pelaksanaan {namaTraining}</strong> sebagai konfirmasi pelaksanaan training yang akan diselenggarakan {tambahanParagrafPembukaOnline} pada:</p>
+            {tempatDanWaktuPelaksanaan}
             <p style="font-family: Helvetica, sans-serif; font-size: 9pt;">Untuk mengakses materi, riwayat pelaksanaan training, dan sertifikat keikutsertaan training bisa diakses melalui Brainmatics Learning Management System (LMS), dengan cara sebagai berikut:</p>
-            
             <ol style="font-family: Helvetica, sans-serif; font-size: 9pt;">
             <li>Silahkan mengakses situs <a href="https://brainmatics.com/" target="_blank">https://brainmatics.com/</a></li>
             <li>Pilih link login yang terdapat di pojok kiri atas</li>
@@ -75,7 +94,7 @@ class SendEmail:
         '''
 
         paragrafPenutup = f'''
-            <p style="font-family: Helvetica, sans-serif; font-size: 9pt;">Semoga pelaksanaan training ini dapat berjalan dengan baik dan mendapatkan hasil yang memuaskan. Demikian yang dapat kami sampaikan, apabila ada informasi yang belum jelas, silahkan menghubungi kami kembali.</p>
+            <p style="font-family: Helvetica, sans-serif; font-size: 9pt;">Semoga pelaksanaan training ini dapat berjalan dengan baik dan mendapatkan hasil yang memuaskan. <br>Demikian yang dapat kami sampaikan, apabila ada informasi yang belum jelas, silahkan menghubungi kami kembali.</p>
             
             <p style="font-family: Helvetica, sans-serif; font-size: 9pt;">Salam,</p>
             
@@ -119,15 +138,16 @@ class SendEmail:
         msg.attach(MIMEText(body, 'html'))
 
         # Menyiapkan attachment
-        with open(attachment_path, "rb") as attachment_file:
-            part = MIMEBase("application", "octet-stream")
-            part.set_payload(attachment_file.read())
-            encoders.encode_base64(part)
-            part.add_header(
-                "Content-Disposition",
-                f"attachment; filename= {attachment_path}",
-            )
-            msg.attach(part)
+        if(not attachment_path is None):
+            with open(attachment_path, "rb") as attachment_file:
+                part = MIMEBase("application", "octet-stream")
+                part.set_payload(attachment_file.read())
+                encoders.encode_base64(part)
+                part.add_header(
+                    "Content-Disposition",
+                    f"attachment; filename= {attachment_path}",
+                )
+                msg.attach(part)
 
         # Membuat sesi SMTP dan mengirim email
         try:

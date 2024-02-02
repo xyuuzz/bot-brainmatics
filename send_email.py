@@ -86,7 +86,7 @@ class SendEmail:
         paragrafAwal = f'''
             <p style="font-family: Helvetica, sans-serif; font-size: 9pt;">Yth Bapak/Ibu {namaPeserta},</p>
             
-            <p style="font-family: Helvetica, sans-serif; font-size: 9pt; margin-bottom: 0; padding-bottom: 0;">Bersama email berikut kami kirimkan <strong>Konfirmasi Pelaksanaan {namaTraining}</strong> sebagai konfirmasi pelaksanaan training yang akan diselenggarakan {tambahanParagrafPembukaOnline} pada:</p>
+            <p style="font-family: Helvetica, sans-serif; font-size: 9pt; margin-bottom: 0; padding-bottom: 0;">Bersama email berikut kami kirimkan Konfirmasi Pelaksanaan <strong>{namaTraining}</strong> sebagai konfirmasi pelaksanaan training yang akan diselenggarakan {tambahanParagrafPembukaOnline} pada:</p>
             {tempatDanWaktuPelaksanaan}
             <p style="font-family: Helvetica, sans-serif; font-size: 9pt;">Untuk mengakses materi, riwayat pelaksanaan training, dan sertifikat keikutsertaan training bisa diakses melalui Brainmatics Learning Management System (LMS), dengan cara sebagai berikut:</p>
             <ol style="font-family: Helvetica, sans-serif; font-size: 9pt;">

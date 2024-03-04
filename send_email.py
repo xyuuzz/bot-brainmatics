@@ -52,13 +52,13 @@ class SendEmail:
 
     def getBodyEmail(self, namaAsisten, noHpAsisten, namaPeserta, namaTraining, tanggalTraining,
                      waktuTraining, lokasiTraining, lokasiLinkGmaps, ruanganTraining, username, password,
-                     totalSoftwarePerluDisiapkan, linkDownloadSoftware, listSoftware, meetingIDZoom, passwordMeetingZoom, linkJoinMeetingZoom, hariOnlineTraining):
+                     totalSoftwarePerluDisiapkan, linkDownloadSoftware, listSoftware, meetingIDZoom, passwordMeetingZoom, linkJoinMeetingZoom, hariOnlineTraining, tipeOnlineTraining):
         isOnline = not pd.isnull(meetingIDZoom)
 
         tambahanParagrafPembukaOnline = ''
         tempatDanWaktuPelaksanaan = ''
         usernameDanPasswordLms = ''
-        if(isOnline):
+        if(isOnline and tipeOnlineTraining == '1H'):
             tambahanParagrafPembukaOnline = 'online via aplikasi Zoom'
             tempatDanWaktuPelaksanaan = f'''
                 <p style="font-family: Helvetica, sans-serif; font-size: 9pt; margin-top: 0; padding-top:0;"><strong>Hari/Tanggal</strong>: {hariOnlineTraining}/{tanggalTraining}<br>
@@ -70,6 +70,18 @@ class SendEmail:
             '''
             usernameDanPasswordLms = f'''
                 <li>Silahkan masukan username dan password anda</li>
+            '''
+        elif(isOnline and (tipeOnlineTraining == 'ROT' or tipeOnlineTraining == 'POT')):
+            tempatDanWaktuPelaksanaan = f'''
+                <p style="font-family: Helvetica, sans-serif; font-size: 9pt; margin-top: 0; padding-top:0;"><strong>Tanggal</strong>: {tanggalTraining}<br>
+                <strong>Waktu</strong>: {waktuTraining}</p>
+                <p style="font-family: Helvetica, sans-serif; font-size: 9pt; margin-top: 0; padding-top:0;"><strong>Meeting ID</strong>: {meetingIDZoom}<br>
+                <strong>Passcode</strong>: {passwordMeetingZoom}<br>
+                <strong>Link Zoom</strong>: <a href="{linkJoinMeetingZoom}" target="_blank">{namaTraining}</a></p>
+            '''
+            usernameDanPasswordLms = f'''
+                <li>Masukan username anda: <strong>{username}</strong></li>
+                <li>Masukkan password anda: <strong>{password}</strong></li>
             '''
         else:
             tempatDanWaktuPelaksanaan = f'''

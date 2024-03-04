@@ -176,7 +176,7 @@ def handle_document(update, context):
 
     chat_id = update.message.chat_id
 
-    if(statusPesan == 'mulai'):
+    if (statusPesan == 'mulai'):
         # Mendapatkan file_id dari dokumen yang dikirim
         file_id = update.message.document.file_id
         new_file = context.bot.get_file(file_id)
@@ -188,19 +188,24 @@ def handle_document(update, context):
         df = pd.read_excel('file_data.xlsx')
 
         meetingIDZoom = df.iloc[22, 1]
+        tipeOnlineTraining = df.iloc[28, 1]
         # is null or nan
-        if(not pd.isnull(meetingIDZoom)):
+        if (not pd.isnull(meetingIDZoom) and tipeOnlineTraining == '1H'):
             trainingType = 'online'
         else:
             context.bot.send_message(chat_id, 'Terima kasih sudah mengirimkan data berupa file excel :>')
             context.bot.send_message(chat_id,
                                      'Untuk langkah selanjutnya silahkan bisa mengirimkan file surat konfirmasi training berupa PDF')
             context.bot.send_message(chat_id, 'Berikut untuk template surat konfirmasi training yang bisa digunakan')
-            context.bot.send_document(chat_id, document=open('template surat konfirmasi training.docx', 'rb'))
+
+            if(not pd.isnull(meetingIDZoom)):
+                context.bot.send_document(chat_id, document=open('template surat konfirmasi online training.docx', 'rb'))
+            else:
+                context.bot.send_document(chat_id, document=open('template surat konfirmasi training.docx', 'rb'))
 
             statusPesan = 'upload_dokumen_training'
             return
-    elif(statusPesan == 'upload_dokumen_training'):
+    elif (statusPesan == 'upload_dokumen_training'):
         # Mendapatkan file_id dari dokumen yang dikirim
         file_id = update.message.document.file_id
         new_file = context.bot.get_file(file_id)
@@ -235,30 +240,32 @@ def handle_document(update, context):
     linkJoinMeetingZoom = df.iloc[24, 1]
     hariOnlineTraining = df.iloc[25, 1]
 
+    tipeOnlineTraining = df.iloc[28, 1]
+
     # password akun menggunakan app password (nanti ada tutorial cara membuatnya)
     sd = SendEmail(emailAsisten, passwordAkunBrainmaticsAsisten)
     sd.setSmtpSettings('smtp.gmail.com', 587)
 
-    if(trainingType == 'online'):
+    if (trainingType == 'online' and tipeOnlineTraining == '1H'):
         file_path = None
     else:
         file_path = sd.getAttachmentPath(namaTraining)
 
     ccEmails = ['info@brainmatics.com']
+    # ccEmails = []
     # ccEmails = ['maulanayuusuf023@gmail.com']
 
     totalSoftwarePerluDisiapkan = df.iloc[1, 8]
     linkDownloadSoftware = df.iloc[2, 8]
     listSoftware = []
 
-    if(totalSoftwarePerluDisiapkan > 0):
-        for i in range(7, totalSoftwarePerluDisiapkan+7):
+    if (totalSoftwarePerluDisiapkan > 0):
+        for i in range(7, totalSoftwarePerluDisiapkan + 7):
             listSoftware.append(df.iloc[i, 7])
-
 
     # looping array banyak data peserta
     # mulai dari angka 2 karena data peserta mulai dari baris ke 3
-    for i in range(2, jumlahPeserta+2):
+    for i in range(2, jumlahPeserta + 2):
         namaPeserta = df.iloc[i, 2]
         emailPeserta = df.iloc[i, 3]
         usernamePeserta = df.iloc[i, 4]
@@ -267,15 +274,17 @@ def handle_document(update, context):
         bodyEmail = sd.getBodyEmail(namaAsisten, noHpAsisten, namaPeserta, namaTraining,
                                     tanggalTraining, waktuTraining, lokasiTraining,
                                     linkLokasiGmaps, ruanganTraining, usernamePeserta, passwordPeserta,
-                                    totalSoftwarePerluDisiapkan, linkDownloadSoftware, listSoftware, meetingIDZoom, passwordMeetingZoom, linkJoinMeetingZoom, hariOnlineTraining)
+                                    totalSoftwarePerluDisiapkan, linkDownloadSoftware, listSoftware, meetingIDZoom,
+                                    passwordMeetingZoom, linkJoinMeetingZoom, hariOnlineTraining, tipeOnlineTraining)
 
         sd.send(f"Konfirmasi Pelaksanaan {namaTraining}", bodyEmail, emailPeserta, ccEmails, namaAsisten, file_path)
-        context.bot.send_message(chat_id, f"Email Konfirmasi Training berhasil dikirimkan ke *{namaPeserta}* melalui email *{emailPeserta}*")
+        context.bot.send_message(chat_id,
+                                 f"Email Konfirmasi Training berhasil dikirimkan ke *{namaPeserta}* melalui email *{emailPeserta}*")
 
     context.bot.send_message(chat_id, 'Semua email konfirmasi peserta berhasil dikirim!')
 
     os.remove('file_data.xlsx')
-    if(trainingType == 'offline'):
+    if (trainingType == 'offline' or (trainingType == 'online' and tipeOnlineTraining != '1H')):
         os.remove('surat_konfirmasi.pdf')
         os.remove(file_path)
 
